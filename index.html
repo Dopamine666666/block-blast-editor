@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Blast关卡编辑器</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            position: relative;
+        }
+        
+        .wallpaper-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -1;
+            opacity: 1.0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .help-tooltip {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        
+        .wallpaper-tooltip {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .help-icon {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        
+        .help-icon:hover {
+            background-color: #0056b3;
+            transform: scale(1.1);
+        }
+        
+        .help-icon:active {
+            transform: scale(0.95);
+        }
+        
+        .wallpaper-icon {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: #28a745;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        
+        .wallpaper-icon:hover {
+            background-color: #218838;
+            transform: scale(1.1);
+        }
+        
+        .wallpaper-icon:active {
+            transform: scale(0.95);
+        }
+        
+        .help-dropdown {
+            position: absolute;
+            top: 30px;
+            left: 0;
+            background-color: rgba(255, 255, 255, 0.98);
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 12px 16px;
+            min-width: 300px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+        
+        .help-tooltip:hover .help-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .wallpaper-dropdown {
+            position: absolute;
+            top: 30px;
+            right: 0;
+            background-color: rgba(255, 255, 255, 0.98);
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 12px 16px;
+            min-width: 220px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+        
+        .wallpaper-tooltip:hover .wallpaper-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .wallpaper-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        
+        .wallpaper-upload {
+            margin-bottom: 10px;
+        }
+        
+        .wallpaper-btn {
+            display: block;
+            width: 100%;
+            padding: 6px 12px;
+            margin-bottom: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            color: #333;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .wallpaper-btn:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+        }
+        
+        .wallpaper-btn:last-child {
+            margin-bottom: 0;
+        }
+        
+        .wallpaper-opacity {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+        
+        .wallpaper-opacity label {
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .wallpaper-opacity input[type="range"] {
+            flex: 1;
+            height: 4px;
+            background: #ddd;
+            border-radius: 2px;
+            outline: none;
+        }
+        
+        .wallpaper-opacity input[type="range"]::-webkit-slider-thumb {
+            width: 14px;
+            height: 14px;
+            background: #28a745;
+            border-radius: 50%;
+            cursor: pointer;
+            -webkit-appearance: none;
+        }
+        
+        .wallpaper-opacity input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: #28a745;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .wallpaper-opacity span {
+            color: #666;
+            font-size: 11px;
+            min-width: 30px;
+        }
+        
+        .wallpaper-checkbox {
+            margin-top: 5px;
+        }
+        
+        .wallpaper-checkbox label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .wallpaper-checkbox input[type="checkbox"] {
+            margin: 0;
+            cursor: pointer;
+        }
+        
+        .wallpaper-checkbox span {
+            color: #333;
+            font-size: 12px;
+        }
+        
+        .help-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        
+        .help-item {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+        
+        .help-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        
+        .canvas-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        #gameCanvas {
+            border: 2px solid #333;
+            border-radius: 4px;
+        }
+        
+        .controls-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .controls {
+            text-align: center;
+        }
+        
+        .number-selector {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .number-btn {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #333;
+            background-color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .number-btn:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .number-btn.selected {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .origin-selector {
+            margin-bottom: 15px;
+        }
+        
+        .origin-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .origin-options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .origin-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .origin-option input[type="radio"] {
+            margin: 0;
+            cursor: pointer;
+        }
+        
+        .origin-option span {
+            cursor: pointer;
+            color: #333;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .action-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .reset-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .reset-btn:hover {
+            background-color: #c82333;
+        }
+        
+        .copy-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .copy-btn:hover {
+            background-color: #218838;
+        }
+        
+        .import-btn {
+            background-color: #17a2b8;
+            color: white;
+        }
+        
+        .import-btn:hover {
+            background-color: #138496;
+        }
+        
+        .output-area {
+            flex: 1;
+        }
+        
+
+        
+        .message-area {
+            margin-bottom: 5px;
+            min-height: 20px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .message-success {
+            color: #28a745;
+            background-color: rgba(212, 237, 218, 0.95);
+            border: 1px solid #c3e6cb;
+            padding: 5px 8px;
+            border-radius: 4px;
+        }
+        
+        .message-error {
+            color: #dc3545;
+            background-color: rgba(248, 215, 218, 0.95);
+            border: 1px solid #f5c6cb;
+            padding: 5px 8px;
+            border-radius: 4px;
+        }
+        
+        .output-textarea {
+            width: 100%;
+            height: 200px;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        
+
+    </style>
+</head>
+<body>
+    <div class="wallpaper-background" id="wallpaperBackground"></div>
+    
+    <div class="container">
+        <div class="help-tooltip">
+            <span class="help-icon">?</span>
+            <div class="help-dropdown">
+                <div class="help-title">使用说明：</div>
+                <div class="help-item">• 左键点击网格根据选中数字赋值，右键点击置0</div>
+                <div class="help-item">• 点击"复制"按钮将当前数据复制到剪贴板</div>
+                <div class="help-item">• 点击"导入"按钮识别文本并更新棋盘</div>
+                <div class="help-item">• 选择不同坐标原点会影响数据的导出和导入格式</div>
+            </div>
+        </div>
+        
+        <div class="wallpaper-tooltip">
+            <span class="wallpaper-icon">🖼️</span>
+            <div class="wallpaper-dropdown">
+                <div class="wallpaper-title">壁纸设置：</div>
+                <div class="wallpaper-upload">
+                    <input type="file" id="wallpaperInput" accept="image/*" style="display: none;">
+                    <button class="wallpaper-btn" id="uploadBtn">上传壁纸</button>
+                    <button class="wallpaper-btn" id="removeBtn">移除壁纸</button>
+                </div>
+                <div class="wallpaper-opacity">
+                    <label for="opacitySlider">壁纸透明度：</label>
+                    <input type="range" id="opacitySlider" min="0" max="100" value="100">
+                    <span id="opacityValue">100%</span>
+                </div>
+                <div class="wallpaper-opacity">
+                    <label for="interfaceOpacitySlider">界面透明度：</label>
+                    <input type="range" id="interfaceOpacitySlider" min="0" max="100" value="95">
+                    <span id="interfaceOpacityValue">95%</span>
+                </div>
+                <div class="wallpaper-opacity">
+                    <label for="blurSlider">毛玻璃强度：</label>
+                    <input type="range" id="blurSlider" min="0" max="20" value="10">
+                    <span id="blurValue">10px</span>
+                </div>
+                <div class="wallpaper-checkbox">
+                    <label>
+                        <input type="checkbox" id="enableBlur" checked>
+                        <span>启用毛玻璃效果</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <h1>Block Blast关卡编辑器</h1>
+        
+        <div class="main-content">
+            <div class="canvas-section">
+                <div id="gameCanvas"></div>
+            </div>
+            
+            <div class="controls-section">
+                <div class="controls">
+                    <div class="number-selector">
+                        <button class="number-btn selected" data-number="0">0</button>
+                        <button class="number-btn" data-number="1">1</button>
+                        <button class="number-btn" data-number="2">2</button>
+                        <button class="number-btn" data-number="3">3</button>
+                        <button class="number-btn" data-number="4">4</button>
+                        <button class="number-btn" data-number="5">5</button>
+                        <button class="number-btn" data-number="6">6</button>
+                    </div>
+                    
+                    <div class="origin-selector">
+                        <div class="origin-label">坐标原点：</div>
+                        <div class="origin-options">
+                            <label class="origin-option">
+                                <input type="radio" name="origin" value="top-left">
+                                <span>左上角</span>
+                            </label>
+                            <label class="origin-option">
+                                <input type="radio" name="origin" value="bottom-left" checked>
+                                <span>左下角</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="action-btn reset-btn" id="resetBtn">重置棋盘</button>
+                        <button class="action-btn copy-btn" id="copyBtn">复制</button>
+                        <button class="action-btn import-btn" id="importBtn">导入</button>
+                    </div>
+                </div>
+                
+                <div class="output-area">
+                    <div class="message-area" id="messageArea"></div>
+                    <textarea class="output-textarea" id="outputArea" placeholder="棋盘数据将实时显示在此处，可直接编辑并点击导入"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="main.js"></script>
+</body>
+</html>
