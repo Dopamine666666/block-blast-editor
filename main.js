@@ -50,11 +50,11 @@ class BlockBlastEditor {
         await this.app.init({
             width: this.gridSize * this.cellSize + 40,
             height: this.gridSize * this.cellSize + 40,
-            backgroundColor: 0xffffff,
+            backgroundColor: 0x000000,
             backgroundAlpha: 0, // 设置背景透明
             antialias: true
         });
-        
+        globalThis.__PIXI_APP__ = this.app;
         // 创建一个专门的背景Sprite来控制背景透明度
         this.backgroundSprite = new PIXI.Graphics();
         this.backgroundSprite.beginFill(0xffffff);
@@ -93,15 +93,18 @@ class BlockBlastEditor {
         cellBg.beginFill(0xf0f0f0);
         cellBg.drawRect(0, 0, this.cellSize - 2, this.cellSize - 2);
         cellBg.endFill();
-        
-        // 添加边框
-        cellBg.lineStyle(2, 0x333333);
-        cellBg.drawRect(0, 0, this.cellSize - 2, this.cellSize - 2);
-        
         cellBg.x = x;
         cellBg.y = y;
         cellBg.interactive = true;
         cellBg.buttonMode = true;
+        
+        // 创建边框（独立的Graphics对象，不受格子透明度影响）
+        const cellBorder = new PIXI.Graphics();
+        cellBorder.lineStyle(2, 0x333333);
+        cellBorder.drawRect(0, 0, this.cellSize - 2, this.cellSize - 2);
+        cellBorder.x = x;
+        cellBorder.y = y;
+        cellBorder.alpha = 1.0; // 边框始终不透明
         
         // 创建数字文本
         const numberText = new PIXI.Text('0', {
@@ -140,15 +143,18 @@ class BlockBlastEditor {
         });
         
         this.app.stage.addChild(cellBg);
+        this.app.stage.addChild(cellBorder);
         this.app.stage.addChild(numberText);
         
         this.gridSprites[row][col] = {
             background: cellBg,
+            border: cellBorder,
             text: numberText
         };
         
         // 应用当前的透明度设置
         cellBg.alpha = this.gridOpacity;
+        cellBorder.alpha = 1.0; // 边框保持完全不透明
         numberText.alpha = 1.0; // 文本保持完全不透明
     }
     
@@ -170,7 +176,8 @@ class BlockBlastEditor {
         
         this.gridSprites[row][col].text.style.fill = colors[number] || 0x333333;
         
-        // 确保文本保持不透明
+        // 确保边框和文本保持不透明
+        this.gridSprites[row][col].border.alpha = 1.0;
         this.gridSprites[row][col].text.alpha = 1.0;
         
         // 实时更新文本框
@@ -752,12 +759,14 @@ class BlockBlastEditor {
     updateGridOpacity(value) {
         this.gridOpacity = value / 100;
         
-        // 设置每个格子背景的透明度，保持文本不透明
+        // 设置每个格子背景的透明度，保持边框和文本不透明
         if (this.gridSprites && this.gridSprites.length > 0) {
             for (let row = 0; row < this.gridSize; row++) {
                 for (let col = 0; col < this.gridSize; col++) {
                     if (this.gridSprites[row] && this.gridSprites[row][col]) {
                         this.gridSprites[row][col].background.alpha = this.gridOpacity;
+                        // 边框保持完全不透明
+                        this.gridSprites[row][col].border.alpha = 1.0;
                         // 文本保持完全不透明
                         this.gridSprites[row][col].text.alpha = 1.0;
                     }

@@ -75,18 +75,22 @@
         }
         
         .wallpaper-icon {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             width: 24px;
             height: 24px;
             background-color: #28a745;
             color: white;
             border-radius: 50%;
-            text-align: center;
-            line-height: 24px;
             font-size: 12px;
             cursor: pointer;
             transition: all 0.2s;
             user-select: none;
+        }
+        
+        .wallpaper-icon svg {
+            vertical-align: middle;
         }
         
         .wallpaper-icon:hover {
@@ -473,7 +477,12 @@
         </div>
         
         <div class="wallpaper-tooltip">
-            <span class="wallpaper-icon">🖼️</span>
+            <span class="wallpaper-icon">
+                <svg t="1752776429965" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4561" width="16" height="16">
+                    <path d="M261.9 492.9c20.6 11.9 46 11.9 66.6 0 20.6-11.9 33.3-33.9 33.3-57.6 0-36.8-29.8-66.5-66.6-66.5s-66.5 29.8-66.5 66.5c0 23.8 12.7 45.7 33.2 57.6z" p-id="4562" fill="#ffffff"></path>
+                    <path d="M804 153.4H221.4c-78.3 0-142 63.7-142 142v436.9c0 78.3 63.7 142 142 142H804c78.3 0 142-63.7 142-142V295.4c-0.1-78.3-63.7-142-142-142z m-659.1 142c0-42.2 34.3-76.5 76.4-76.5H804c42.1 0 76.4 34.3 76.4 76.5v331.1l-95.3-86.2-13.6-9.7c-71.9-46.1-164.2-45.1-233.9 1.3l-385 232.6c-4.7-9.9-7.7-20.6-7.7-32.2V295.4zM804 808.8H221.4c-4.1 0-7.6-1.7-11.4-2.3l362.8-219.2c49.5-32.9 113.6-33.4 162.8-1.9l143.7 128.5 1.2-1.3v19.8c-0.1 42.1-34.4 76.4-76.5 76.4z" p-id="4563" fill="#ffffff"></path>
+                </svg>
+            </span>
             <div class="wallpaper-dropdown">
                 <div class="wallpaper-title">壁纸设置：</div>
                 <div class="wallpaper-upload">
