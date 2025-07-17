@@ -12,7 +12,10 @@ class BlockBlastEditor {
         this.gridStartY = 20;
         this.originType = 'bottom-left'; // 默认为左下角
         this.wallpaperOpacity = 1.0; // 默认壁纸透明度为100%
-        this.interfaceOpacity = 0.95; // 默认界面透明度为95%
+        this.interfaceOpacity = 0.95; // 默认主界面透明度为95%
+        this.chessboardOpacity = 0.90; // 默认棋盘透明度为90%
+        this.controlsOpacity = 0.95; // 默认控制器透明度为95%
+        this.textAreaOpacity = 0.95; // 默认文本区域透明度为95%
         this.blurStrength = 10; // 默认毛玻璃强度为10px
         this.enableBlur = true; // 默认启用毛玻璃效果
     }
@@ -439,6 +442,24 @@ class BlockBlastEditor {
             this.updateInterfaceOpacity(e.target.value);
         });
         
+        // 棋盘透明度滑块事件
+        const chessboardOpacitySlider = document.getElementById('chessboardOpacitySlider');
+        chessboardOpacitySlider.addEventListener('input', (e) => {
+            this.updateChessboardOpacity(e.target.value);
+        });
+        
+        // 控制器透明度滑块事件
+        const controlsOpacitySlider = document.getElementById('controlsOpacitySlider');
+        controlsOpacitySlider.addEventListener('input', (e) => {
+            this.updateControlsOpacity(e.target.value);
+        });
+        
+        // 文本区域透明度滑块事件
+        const textAreaOpacitySlider = document.getElementById('textAreaOpacitySlider');
+        textAreaOpacitySlider.addEventListener('input', (e) => {
+            this.updateTextAreaOpacity(e.target.value);
+        });
+        
         // 毛玻璃强度滑块事件
         const blurSlider = document.getElementById('blurSlider');
         blurSlider.addEventListener('input', (e) => {
@@ -492,6 +513,9 @@ class BlockBlastEditor {
         const savedWallpaper = localStorage.getItem('wallpaperImage');
         const savedOpacity = localStorage.getItem('wallpaperOpacity');
         const savedInterfaceOpacity = localStorage.getItem('interfaceOpacity');
+        const savedChessboardOpacity = localStorage.getItem('chessboardOpacity');
+        const savedControlsOpacity = localStorage.getItem('controlsOpacity');
+        const savedTextAreaOpacity = localStorage.getItem('textAreaOpacity');
         const savedBlurStrength = localStorage.getItem('blurStrength');
         const savedEnableBlur = localStorage.getItem('enableBlur');
         
@@ -517,6 +541,36 @@ class BlockBlastEditor {
         } else {
             // 设置默认界面透明度
             this.updateInterfaceOpacity(this.interfaceOpacity * 100);
+        }
+        
+        if (savedChessboardOpacity) {
+            this.chessboardOpacity = parseFloat(savedChessboardOpacity);
+            const chessboardOpacitySlider = document.getElementById('chessboardOpacitySlider');
+            chessboardOpacitySlider.value = this.chessboardOpacity * 100;
+            this.updateChessboardOpacity(this.chessboardOpacity * 100);
+        } else {
+            // 设置默认棋盘透明度
+            this.updateChessboardOpacity(this.chessboardOpacity * 100);
+        }
+        
+        if (savedControlsOpacity) {
+            this.controlsOpacity = parseFloat(savedControlsOpacity);
+            const controlsOpacitySlider = document.getElementById('controlsOpacitySlider');
+            controlsOpacitySlider.value = this.controlsOpacity * 100;
+            this.updateControlsOpacity(this.controlsOpacity * 100);
+        } else {
+            // 设置默认控制器透明度
+            this.updateControlsOpacity(this.controlsOpacity * 100);
+        }
+        
+        if (savedTextAreaOpacity) {
+            this.textAreaOpacity = parseFloat(savedTextAreaOpacity);
+            const textAreaOpacitySlider = document.getElementById('textAreaOpacitySlider');
+            textAreaOpacitySlider.value = this.textAreaOpacity * 100;
+            this.updateTextAreaOpacity(this.textAreaOpacity * 100);
+        } else {
+            // 设置默认文本区域透明度
+            this.updateTextAreaOpacity(this.textAreaOpacity * 100);
         }
         
         if (savedBlurStrength) {
@@ -603,15 +657,9 @@ class BlockBlastEditor {
     updateInterfaceOpacity(value) {
         this.interfaceOpacity = value / 100;
         const container = document.querySelector('.container');
-        const gameCanvas = document.getElementById('gameCanvas');
         
         // 设置主容器背景透明度
         container.style.backgroundColor = `rgba(255, 255, 255, ${this.interfaceOpacity})`;
-        
-        // 设置棋盘背景透明度
-        if (gameCanvas) {
-            gameCanvas.style.backgroundColor = `rgba(255, 255, 255, ${Math.min(this.interfaceOpacity + 0.1, 1.0)})`;
-        }
         
         // 更新毛玻璃效果
         this.updateBlurEffect();
@@ -621,6 +669,75 @@ class BlockBlastEditor {
         
         // 保存透明度设置
         localStorage.setItem('interfaceOpacity', this.interfaceOpacity);
+    }
+    
+    // 更新棋盘透明度
+    updateChessboardOpacity(value) {
+        this.chessboardOpacity = value / 100;
+        const gameCanvas = document.getElementById('gameCanvas');
+        
+        // 设置棋盘背景透明度
+        if (gameCanvas) {
+            gameCanvas.style.backgroundColor = `rgba(255, 255, 255, ${this.chessboardOpacity})`;
+        }
+        
+        // 更新显示的透明度值
+        document.getElementById('chessboardOpacityValue').textContent = `${value}%`;
+        
+        // 保存透明度设置
+        localStorage.setItem('chessboardOpacity', this.chessboardOpacity);
+    }
+    
+    // 更新控制器透明度
+    updateControlsOpacity(value) {
+        this.controlsOpacity = value / 100;
+        
+        // 设置数字选择器背景透明度
+        const numberButtons = document.querySelectorAll('.number-btn');
+        numberButtons.forEach(btn => {
+            btn.style.backgroundColor = `rgba(255, 255, 255, ${this.controlsOpacity})`;
+        });
+        
+        // 设置原点选择器背景透明度
+        const originSelector = document.querySelector('.origin-selector');
+        if (originSelector) {
+            originSelector.style.backgroundColor = `rgba(248, 249, 250, ${this.controlsOpacity})`;
+        }
+        
+        // 设置操作按钮背景透明度
+        const actionButtons = document.querySelectorAll('.action-btn');
+        actionButtons.forEach(btn => {
+            if (btn.classList.contains('reset-btn')) {
+                btn.style.backgroundColor = `rgba(220, 53, 69, ${this.controlsOpacity})`;
+            } else if (btn.classList.contains('copy-btn')) {
+                btn.style.backgroundColor = `rgba(40, 167, 69, ${this.controlsOpacity})`;
+            } else if (btn.classList.contains('import-btn')) {
+                btn.style.backgroundColor = `rgba(23, 162, 184, ${this.controlsOpacity})`;
+            }
+        });
+        
+        // 更新显示的透明度值
+        document.getElementById('controlsOpacityValue').textContent = `${value}%`;
+        
+        // 保存透明度设置
+        localStorage.setItem('controlsOpacity', this.controlsOpacity);
+    }
+    
+    // 更新文本区域透明度
+    updateTextAreaOpacity(value) {
+        this.textAreaOpacity = value / 100;
+        const outputArea = document.getElementById('outputArea');
+        
+        // 设置文本框背景透明度
+        if (outputArea) {
+            outputArea.style.backgroundColor = `rgba(255, 255, 255, ${this.textAreaOpacity})`;
+        }
+        
+        // 更新显示的透明度值
+        document.getElementById('textAreaOpacityValue').textContent = `${value}%`;
+        
+        // 保存透明度设置
+        localStorage.setItem('textAreaOpacity', this.textAreaOpacity);
     }
     
     // 更新毛玻璃强度
@@ -671,6 +788,9 @@ class BlockBlastEditor {
         localStorage.setItem('wallpaperImage', imageData);
         localStorage.setItem('wallpaperOpacity', this.wallpaperOpacity);
         localStorage.setItem('interfaceOpacity', this.interfaceOpacity);
+        localStorage.setItem('chessboardOpacity', this.chessboardOpacity);
+        localStorage.setItem('controlsOpacity', this.controlsOpacity);
+        localStorage.setItem('textAreaOpacity', this.textAreaOpacity);
         localStorage.setItem('blurStrength', this.blurStrength);
         localStorage.setItem('enableBlur', this.enableBlur);
     }

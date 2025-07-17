@@ -130,7 +130,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             padding: 12px 16px;
-            min-width: 220px;
+            min-width: 280px;
             opacity: 0;
             visibility: hidden;
             transform: translateY(-10px);
@@ -185,11 +185,14 @@
             align-items: center;
             gap: 8px;
             font-size: 12px;
+            margin-bottom: 8px;
         }
         
         .wallpaper-opacity label {
             color: #333;
             font-weight: 500;
+            min-width: 70px;
+            white-space: nowrap;
         }
         
         .wallpaper-opacity input[type="range"] {
@@ -221,7 +224,8 @@
         .wallpaper-opacity span {
             color: #666;
             font-size: 11px;
-            min-width: 30px;
+            min-width: 35px;
+            text-align: right;
         }
         
         .wallpaper-checkbox {
@@ -447,6 +451,7 @@
             border-radius: 4px;
             resize: vertical;
             box-sizing: border-box;
+            background-color: rgba(255, 255, 255, 0.95);
         }
         
 
@@ -477,17 +482,32 @@
                     <button class="wallpaper-btn" id="removeBtn">移除壁纸</button>
                 </div>
                 <div class="wallpaper-opacity">
-                    <label for="opacitySlider">壁纸透明度：</label>
+                    <label for="opacitySlider">壁纸透明：</label>
                     <input type="range" id="opacitySlider" min="0" max="100" value="100">
                     <span id="opacityValue">100%</span>
                 </div>
                 <div class="wallpaper-opacity">
-                    <label for="interfaceOpacitySlider">界面透明度：</label>
+                    <label for="interfaceOpacitySlider">主界面：</label>
                     <input type="range" id="interfaceOpacitySlider" min="0" max="100" value="95">
                     <span id="interfaceOpacityValue">95%</span>
                 </div>
                 <div class="wallpaper-opacity">
-                    <label for="blurSlider">毛玻璃强度：</label>
+                    <label for="chessboardOpacitySlider">棋盘：</label>
+                    <input type="range" id="chessboardOpacitySlider" min="0" max="100" value="90">
+                    <span id="chessboardOpacityValue">90%</span>
+                </div>
+                <div class="wallpaper-opacity">
+                    <label for="controlsOpacitySlider">控制器：</label>
+                    <input type="range" id="controlsOpacitySlider" min="0" max="100" value="95">
+                    <span id="controlsOpacityValue">95%</span>
+                </div>
+                <div class="wallpaper-opacity">
+                    <label for="textAreaOpacitySlider">文本区：</label>
+                    <input type="range" id="textAreaOpacitySlider" min="0" max="100" value="95">
+                    <span id="textAreaOpacityValue">95%</span>
+                </div>
+                <div class="wallpaper-opacity">
+                    <label for="blurSlider">毛玻璃：</label>
                     <input type="range" id="blurSlider" min="0" max="20" value="10">
                     <span id="blurValue">10px</span>
                 </div>
