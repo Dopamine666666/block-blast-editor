@@ -3,6 +3,7 @@ import * as PIXI from './pixi.min.mjs';
 class BlockBlastEditor {
     constructor() {
         this.app = null;
+        this.backgroundSprite = null;
         this.boardData = [];
         this.gridSprites = [];
         this.selectedNumber = 0;
@@ -13,7 +14,8 @@ class BlockBlastEditor {
         this.originType = 'bottom-left'; // 默认为左下角
         this.wallpaperOpacity = 1.0; // 默认壁纸透明度为100%
         this.interfaceOpacity = 0.95; // 默认主界面透明度为95%
-        this.chessboardOpacity = 0.90; // 默认棋盘透明度为90%
+        this.chessboardBgOpacity = 0.90; // 默认棋盘背景透明度为90%
+        this.gridOpacity = 0.90; // 默认网格透明度为90%
         this.controlsOpacity = 0.95; // 默认控制器透明度为95%
         this.textAreaOpacity = 0.95; // 默认文本区域透明度为95%
         this.blurStrength = 10; // 默认毛玻璃强度为10px
@@ -26,6 +28,9 @@ class BlockBlastEditor {
         this.createGrid();
         this.initEventListeners();
         this.updateTextarea(); // 初始化时更新文本框
+        
+        // 确保在PixiJS初始化后应用透明度设置
+        this.applyInitialOpacitySettings();
     }
     
     // 初始化棋盘数据
@@ -46,8 +51,17 @@ class BlockBlastEditor {
             width: this.gridSize * this.cellSize + 40,
             height: this.gridSize * this.cellSize + 40,
             backgroundColor: 0xffffff,
+            backgroundAlpha: 0, // 设置背景透明
             antialias: true
         });
+        
+        // 创建一个专门的背景Sprite来控制背景透明度
+        this.backgroundSprite = new PIXI.Graphics();
+        this.backgroundSprite.beginFill(0xffffff);
+        this.backgroundSprite.drawRect(0, 0, this.gridSize * this.cellSize + 40, this.gridSize * this.cellSize + 40);
+        this.backgroundSprite.endFill();
+        this.backgroundSprite.alpha = this.chessboardBgOpacity;
+        this.app.stage.addChildAt(this.backgroundSprite, 0); // 添加到最底层
         
         document.getElementById('gameCanvas').appendChild(this.app.view);
         
@@ -132,6 +146,10 @@ class BlockBlastEditor {
             background: cellBg,
             text: numberText
         };
+        
+        // 应用当前的透明度设置
+        cellBg.alpha = this.gridOpacity;
+        numberText.alpha = 1.0; // 文本保持完全不透明
     }
     
     // 设置格子数字
@@ -151,6 +169,9 @@ class BlockBlastEditor {
         };
         
         this.gridSprites[row][col].text.style.fill = colors[number] || 0x333333;
+        
+        // 确保文本保持不透明
+        this.gridSprites[row][col].text.alpha = 1.0;
         
         // 实时更新文本框
         this.updateTextarea();
@@ -442,10 +463,16 @@ class BlockBlastEditor {
             this.updateInterfaceOpacity(e.target.value);
         });
         
-        // 棋盘透明度滑块事件
-        const chessboardOpacitySlider = document.getElementById('chessboardOpacitySlider');
-        chessboardOpacitySlider.addEventListener('input', (e) => {
-            this.updateChessboardOpacity(e.target.value);
+        // 棋盘背景透明度滑块事件
+        const chessboardBgOpacitySlider = document.getElementById('chessboardBgOpacitySlider');
+        chessboardBgOpacitySlider.addEventListener('input', (e) => {
+            this.updateChessboardBgOpacity(e.target.value);
+        });
+        
+        // 网格透明度滑块事件
+        const gridOpacitySlider = document.getElementById('gridOpacitySlider');
+        gridOpacitySlider.addEventListener('input', (e) => {
+            this.updateGridOpacity(e.target.value);
         });
         
         // 控制器透明度滑块事件
@@ -513,7 +540,17 @@ class BlockBlastEditor {
         const savedWallpaper = localStorage.getItem('wallpaperImage');
         const savedOpacity = localStorage.getItem('wallpaperOpacity');
         const savedInterfaceOpacity = localStorage.getItem('interfaceOpacity');
-        const savedChessboardOpacity = localStorage.getItem('chessboardOpacity');
+        const savedChessboardBgOpacity = localStorage.getItem('chessboardBgOpacity');
+        const savedGridOpacity = localStorage.getItem('gridOpacity');
+        
+        // 兼容性处理：如果存在旧的chessboardOpacity设置，将其迁移到新的设置
+        const oldChessboardOpacity = localStorage.getItem('chessboardOpacity');
+        if (oldChessboardOpacity && !savedChessboardBgOpacity && !savedGridOpacity) {
+            // 将旧的设置同时应用到棋盘背景和网格
+            localStorage.setItem('chessboardBgOpacity', oldChessboardOpacity);
+            localStorage.setItem('gridOpacity', oldChessboardOpacity);
+            localStorage.removeItem('chessboardOpacity'); // 移除旧设置
+        }
         const savedControlsOpacity = localStorage.getItem('controlsOpacity');
         const savedTextAreaOpacity = localStorage.getItem('textAreaOpacity');
         const savedBlurStrength = localStorage.getItem('blurStrength');
@@ -543,14 +580,38 @@ class BlockBlastEditor {
             this.updateInterfaceOpacity(this.interfaceOpacity * 100);
         }
         
-        if (savedChessboardOpacity) {
-            this.chessboardOpacity = parseFloat(savedChessboardOpacity);
-            const chessboardOpacitySlider = document.getElementById('chessboardOpacitySlider');
-            chessboardOpacitySlider.value = this.chessboardOpacity * 100;
-            this.updateChessboardOpacity(this.chessboardOpacity * 100);
+        // 兼容性处理后重新获取设置值
+        const finalChessboardBgOpacity = localStorage.getItem('chessboardBgOpacity');
+        const finalGridOpacity = localStorage.getItem('gridOpacity');
+        
+        if (finalChessboardBgOpacity) {
+            this.chessboardBgOpacity = parseFloat(finalChessboardBgOpacity);
+            const chessboardBgOpacitySlider = document.getElementById('chessboardBgOpacitySlider');
+            chessboardBgOpacitySlider.value = this.chessboardBgOpacity * 100;
+            // 如果背景Sprite已经创建，则应用透明度设置
+            if (this.backgroundSprite) {
+                this.updateChessboardBgOpacity(this.chessboardBgOpacity * 100);
+            }
         } else {
-            // 设置默认棋盘透明度
-            this.updateChessboardOpacity(this.chessboardOpacity * 100);
+            // 设置默认棋盘背景透明度
+            if (this.backgroundSprite) {
+                this.updateChessboardBgOpacity(this.chessboardBgOpacity * 100);
+            }
+        }
+        
+        if (finalGridOpacity) {
+            this.gridOpacity = parseFloat(finalGridOpacity);
+            const gridOpacitySlider = document.getElementById('gridOpacitySlider');
+            gridOpacitySlider.value = this.gridOpacity * 100;
+            // 如果棋盘格子已经初始化，则应用透明度设置
+            if (this.gridSprites && this.gridSprites.length > 0) {
+                this.updateGridOpacity(this.gridOpacity * 100);
+            }
+        } else {
+            // 设置默认网格透明度
+            if (this.gridSprites && this.gridSprites.length > 0) {
+                this.updateGridOpacity(this.gridOpacity * 100);
+            }
         }
         
         if (savedControlsOpacity) {
@@ -671,21 +732,44 @@ class BlockBlastEditor {
         localStorage.setItem('interfaceOpacity', this.interfaceOpacity);
     }
     
-    // 更新棋盘透明度
-    updateChessboardOpacity(value) {
-        this.chessboardOpacity = value / 100;
-        const gameCanvas = document.getElementById('gameCanvas');
+    // 更新棋盘背景透明度
+    updateChessboardBgOpacity(value) {
+        this.chessboardBgOpacity = value / 100;
         
-        // 设置棋盘背景透明度
-        if (gameCanvas) {
-            gameCanvas.style.backgroundColor = `rgba(255, 255, 255, ${this.chessboardOpacity})`;
+        // 设置背景Sprite的透明度
+        if (this.backgroundSprite) {
+            this.backgroundSprite.alpha = this.chessboardBgOpacity;
         }
         
         // 更新显示的透明度值
-        document.getElementById('chessboardOpacityValue').textContent = `${value}%`;
+        document.getElementById('chessboardBgOpacityValue').textContent = `${value}%`;
         
         // 保存透明度设置
-        localStorage.setItem('chessboardOpacity', this.chessboardOpacity);
+        localStorage.setItem('chessboardBgOpacity', this.chessboardBgOpacity);
+    }
+    
+    // 更新网格透明度
+    updateGridOpacity(value) {
+        this.gridOpacity = value / 100;
+        
+        // 设置每个格子背景的透明度，保持文本不透明
+        if (this.gridSprites && this.gridSprites.length > 0) {
+            for (let row = 0; row < this.gridSize; row++) {
+                for (let col = 0; col < this.gridSize; col++) {
+                    if (this.gridSprites[row] && this.gridSprites[row][col]) {
+                        this.gridSprites[row][col].background.alpha = this.gridOpacity;
+                        // 文本保持完全不透明
+                        this.gridSprites[row][col].text.alpha = 1.0;
+                    }
+                }
+            }
+        }
+        
+        // 更新显示的透明度值
+        document.getElementById('gridOpacityValue').textContent = `${value}%`;
+        
+        // 保存透明度设置
+        localStorage.setItem('gridOpacity', this.gridOpacity);
     }
     
     // 更新控制器透明度
@@ -783,12 +867,26 @@ class BlockBlastEditor {
         if (wallpaperDropdown) wallpaperDropdown.style.backdropFilter = blurValue;
     }
     
+    // 应用初始透明度设置
+    applyInitialOpacitySettings() {
+        // 确保棋盘背景透明度设置在背景Sprite创建后应用
+        if (this.backgroundSprite) {
+            this.updateChessboardBgOpacity(this.chessboardBgOpacity * 100);
+        }
+        
+        // 确保网格透明度设置在PixiJS初始化后应用
+        if (this.gridSprites && this.gridSprites.length > 0) {
+            this.updateGridOpacity(this.gridOpacity * 100);
+        }
+    }
+    
     // 保存壁纸设置
     saveWallpaperSettings(imageData) {
         localStorage.setItem('wallpaperImage', imageData);
         localStorage.setItem('wallpaperOpacity', this.wallpaperOpacity);
         localStorage.setItem('interfaceOpacity', this.interfaceOpacity);
-        localStorage.setItem('chessboardOpacity', this.chessboardOpacity);
+        localStorage.setItem('chessboardBgOpacity', this.chessboardBgOpacity);
+        localStorage.setItem('gridOpacity', this.gridOpacity);
         localStorage.setItem('controlsOpacity', this.controlsOpacity);
         localStorage.setItem('textAreaOpacity', this.textAreaOpacity);
         localStorage.setItem('blurStrength', this.blurStrength);
