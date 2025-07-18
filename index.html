@@ -7,10 +7,14 @@
     <style>
         body {
             margin: 0;
-            padding: 10px;
+            padding: 0;
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
             position: relative;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         .wallpaper-background {
@@ -29,7 +33,7 @@
         
         .container {
             max-width: 900px;
-            margin: 0 auto;
+            margin: 0;
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -582,6 +586,7 @@
         </div>
     </div>
     
-    <script type="module" src="main.js"></script>
+    <script src="pixi.min.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>

@@ -1,5 +1,3 @@
-import * as PIXI from './pixi.min.mjs';
-
 class BlockBlastEditor {
     constructor() {
         this.app = null;
